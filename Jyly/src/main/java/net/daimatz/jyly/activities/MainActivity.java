@@ -1,9 +1,11 @@
-package net.daimatz.jyly;
+package net.daimatz.jyly.activities;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import net.daimatz.jyly.R;
 
 
 public class MainActivity extends ActionBarActivity {
