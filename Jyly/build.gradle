@@ -1,3 +1,4 @@
+apply from: 'instagram.gradle'
 apply plugin: 'com.android.application'
 
 android {
@@ -10,6 +11,10 @@ android {
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
+
+        resValue "string", "instagram_client_id",     INSTAGRAM['client_id']
+        resValue "string", "instagram_client_secret", INSTAGRAM['client_secret']
+        resValue "string", "instagram_redirect_uri",  INSTAGRAM['redirect_uri']
     }
     buildTypes {
         release {
@@ -21,5 +26,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:21.+'
+    compile 'com.jakewharton:butterknife:6.0.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }

@@ -11,6 +11,7 @@
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
+            android:screenOrientation="portrait"
         >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -18,5 +19,6 @@
             </intent-filter>
         </activity>
     </application>
-
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 </manifest>

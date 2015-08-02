@@ -7,7 +7,6 @@ import android.view.MenuItem;
 
 import net.daimatz.jyly.R;
 
-
 public class MainActivity extends ActionBarActivity {
 
     @Override
