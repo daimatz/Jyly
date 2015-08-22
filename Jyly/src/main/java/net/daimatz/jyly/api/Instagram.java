@@ -3,6 +3,7 @@ package net.daimatz.jyly.api;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -31,12 +34,14 @@ public class Instagram {
     private final String mClientId;
     private final String mClientSecret;
     private final String mRedirectUri;
+    private final Session mSession;
 
     public Instagram(Context context, String clientId, String clientSecret, String redirectUri) {
         mContext = context;
         mClientId = clientId;
         mClientSecret = clientSecret;
         mRedirectUri = redirectUri;
+        mSession = new Session(mContext);
     }
 
     public void showAuthDialog(Activity activity, final AuthListener listener) {
@@ -111,17 +116,96 @@ public class Instagram {
         return null;
     }
 
+    public void resetSession() {
+        mSession.reset();
+    }
+
     public Session getSession() {
-        return new Session();
+        return mSession;
     }
 
     public static class Session {
+        private static final String TAG = Session.class.toString();
+
+        private static final String SHARED_PREFERENCE = "Instagram_Preferences";
+        private static final String USER_ID           = "user_id";
+        private static final String USER_NAME         = "user_name";
+        private static final String FULL_NAME         = "full_name";
+        private static final String PROFILE_PICTURE   = "prof_pic";
+        private static final String ACCESS_TOKEN      = "access_token";
+
+        private final Context mContext;
+        private final SharedPreferences mPref;
+
+        public Session(Context context) {
+            mContext = context;
+            mPref = mContext.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
+        }
+
+        public boolean store(User user) {
+            SharedPreferences.Editor editor = mPref.edit();
+            editor.putString(ACCESS_TOKEN,    user.accessToken);
+            editor.putString(USER_ID,         user.userId);
+            editor.putString(USER_NAME,       user.userName);
+            editor.putString(FULL_NAME,       user.fullName);
+            editor.putString(PROFILE_PICTURE, user.profilePicture);
+            return editor.commit();
+        }
+
+        @SuppressWarnings("deprecation")
+        public void reset() {
+            store(new User("", "", "", "", ""));
+            CookieSyncManager.createInstance(mContext);
+            CookieManager.getInstance().removeAllCookie();
+        }
+
+        @Nullable
+        public User getUser() {
+            String accessToken = mPref.getString(ACCESS_TOKEN, ""),
+                    userId = mPref.getString(USER_ID, ""),
+                    userName = mPref.getString(USER_NAME, ""),
+                    fullName = mPref.getString(FULL_NAME, ""),
+                    profilePicture = mPref.getString(PROFILE_PICTURE, "");
+            if (accessToken == null || accessToken.equals("") ||
+                    userId == null || userId.equals("") ||
+                    userName == null || userName.equals("") ||
+                    fullName == null || fullName.equals("") ||
+                    profilePicture == null || profilePicture.equals("")) {
+                return null;
+            }
+            return new User(accessToken, userId, userName, fullName, profilePicture);
+        }
+
+        public String getAccessToken() {
+            String accessToken = mPref.getString(ACCESS_TOKEN, "");
+            return accessToken != null ? accessToken : "";
+        }
+
         public boolean isActive() {
-            return false;
+            String accessToken = mPref.getString(ACCESS_TOKEN, "");
+            return accessToken != null && !accessToken.equals("");
         }
     }
 
     public static class User {
+        public final String accessToken;
+        public final String userId;
+        public final String userName;
+        public final String fullName;
+        public final String profilePicture;
+        public User(
+                String accessToken,
+                String userId,
+                String userName,
+                String fullName,
+                String profilePicture
+        ) {
+            this.accessToken = accessToken;
+            this.userId = userId;
+            this.userName = userName;
+            this.fullName = fullName;
+            this.profilePicture = profilePicture;
+        }
     }
 
     public interface AuthListener {
